@@ -9,6 +9,8 @@ import { niaGrepTool } from "../lib/tools/nia-grep";
 import { niaExploreTool } from "../lib/tools/nia-explore";
 import { niaOracleTool } from "../lib/tools/nia-oracle";
 import { niaContextTool } from "../lib/tools/nia-context";
+import { niaUsageTool } from "../lib/tools/nia-usage";
+import { niaTracerTool } from "../lib/tools/nia-tracer";
 
 function nia(pi: ExtensionAPI): void {
   pi.registerTool(niaManageResourceTool);
@@ -21,6 +23,8 @@ function nia(pi: ExtensionAPI): void {
   pi.registerTool(niaExploreTool);
   pi.registerTool(niaOracleTool);
   pi.registerTool(niaContextTool);
+  pi.registerTool(niaUsageTool);
+  pi.registerTool(niaTracerTool);
 }
 
 export default nia;

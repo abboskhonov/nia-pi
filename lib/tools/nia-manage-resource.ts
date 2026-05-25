@@ -1,15 +1,7 @@
 import { Type, type Static } from "typebox";
 import type { ToolDefinition } from "@earendil-works/pi-coding-agent";
-import { listSources, getSource, syncSource, deleteSource } from "../api";
-import { formatSources, formatSource } from "../format";
+import { runNia } from "../runner";
 import { toToolResult } from "../result";
-import {
-  MANAGE_RESOURCE_TITLE,
-  MANAGE_RESOURCE_DESCRIPTION,
-  MANAGE_RESOURCE_ACTION_DESCRIPTION,
-  MANAGE_RESOURCE_SOURCE_ID_DESCRIPTION,
-  MANAGE_RESOURCE_QUERY_DESCRIPTION,
-} from "../prompts";
 
 const Params = Type.Object({
   action: Type.Union([
@@ -17,31 +9,26 @@ const Params = Type.Object({
     Type.Literal("status"),
     Type.Literal("sync"),
     Type.Literal("delete"),
-  ], { description: MANAGE_RESOURCE_ACTION_DESCRIPTION }),
-  sourceId: Type.Optional(Type.String({ description: MANAGE_RESOURCE_SOURCE_ID_DESCRIPTION })),
-  query: Type.Optional(Type.String({ description: MANAGE_RESOURCE_QUERY_DESCRIPTION })),
+  ], { description: 'Action: "list", "status", "sync", or "delete".' }),
+  sourceId: Type.Optional(Type.String({ description: "Source ID, display name, or identifier. Required for status, sync, and delete." })),
+  query: Type.Optional(Type.String({ description: 'Optional filter keyword for list (e.g., "react", "stripe", "docs").' })),
 });
 
 export const niaManageResourceTool: ToolDefinition<typeof Params, undefined> = {
   name: "nia-manage-resource",
-  label: MANAGE_RESOURCE_TITLE,
-  description: MANAGE_RESOURCE_DESCRIPTION,
+  label: "Manage NIA Resource",
+  description: `Manage indexed sources in Nia / AgentSearch: list, check status, sync, or delete.
+
+Use this tool FIRST before indexing a new source. Many sources may already be indexed.
+
+When listing, use a targeted \`query\` keyword to save tokens — users can have many sources indexed.`,
   parameters: Params,
   async execute(_toolCallId: string, params: Static<typeof Params>) {
     if (params.action === "list") {
-      const response = await listSources();
-      if (response.error) return toToolResult(response.error);
-      const sources = response.sources ?? [];
-      if (params.query && sources.length > 0) {
-        const filtered = sources.filter(
-          (s) =>
-            s.display_name.toLowerCase().includes(params.query!.toLowerCase()) ||
-            s.identifier.toLowerCase().includes(params.query!.toLowerCase()) ||
-            s.type.toLowerCase().includes(params.query!.toLowerCase())
-        );
-        return toToolResult(formatSources(filtered));
-      }
-      return toToolResult(formatSources(sources));
+      const args = ["sources", "list"];
+      if (params.query) args.push("--query", params.query);
+      const output = await runNia(args);
+      return toToolResult(output);
     }
 
     if (!params.sourceId) {
@@ -49,23 +36,18 @@ export const niaManageResourceTool: ToolDefinition<typeof Params, undefined> = {
     }
 
     if (params.action === "status") {
-      const response = await getSource(params.sourceId);
-      if (response.error) return toToolResult(response.error);
-      if (!response.source) return toToolResult("Source not found.");
-      return toToolResult(formatSource(response.source));
+      const output = await runNia(["sources", "get", params.sourceId]);
+      return toToolResult(output);
     }
 
     if (params.action === "sync") {
-      const response = await syncSource(params.sourceId);
-      if (response.error) return toToolResult(response.error);
-      if (!response.source) return toToolResult("Sync initiated but no source details returned.");
-      return toToolResult(`Sync initiated for **${response.source.display_name}**.\n\nCurrent status: ${response.source.status}`);
+      const output = await runNia(["sources", "sync", params.sourceId]);
+      return toToolResult(output);
     }
 
     if (params.action === "delete") {
-      const response = await deleteSource(params.sourceId);
-      if (response.error) return toToolResult(response.error);
-      return toToolResult(`Source \`${params.sourceId}\` deleted successfully.`);
+      const output = await runNia(["sources", "delete", params.sourceId]);
+      return toToolResult(output);
     }
 
     return toToolResult("Unknown action.");

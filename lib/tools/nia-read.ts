@@ -1,32 +1,25 @@
 import { Type, type Static } from "typebox";
 import type { ToolDefinition } from "@earendil-works/pi-coding-agent";
-import { getSourceContent } from "../api";
+import { runNia } from "../runner";
 import { toToolResult } from "../result";
-import {
-  READ_TITLE,
-  READ_DESCRIPTION,
-  READ_SOURCE_ID_DESCRIPTION,
-  READ_PATH_DESCRIPTION,
-} from "../prompts";
 
 const Params = Type.Object({
-  sourceId: Type.String({ description: READ_SOURCE_ID_DESCRIPTION }),
-  path: Type.Optional(Type.String({ description: READ_PATH_DESCRIPTION })),
+  sourceId: Type.String({ description: 'Source ID, display name, or identifier (e.g., "vercel/ai").' }),
+  path: Type.Optional(Type.String({ description: 'File path within the source (e.g., "src/index.ts").' })),
 });
 
 export const niaReadTool: ToolDefinition<typeof Params, undefined> = {
   name: "nia-read",
-  label: READ_TITLE,
-  description: READ_DESCRIPTION,
+  label: "NIA Read",
+  description: `Read a specific file from an indexed source. Returns full file content — not truncated like web fetch.
+
+Use after \`nia-explore\` to understand structure, then read files you need.`,
   parameters: Params,
   async execute(_toolCallId: string, params: Static<typeof Params>) {
-    const response = await getSourceContent(params.sourceId, params.path);
-    if (response.error) {
-      return toToolResult(response.error);
-    }
-    if (!response.content) {
-      return toToolResult("No content returned. The file may be empty or the path may not exist.");
-    }
-    return toToolResult(response.content);
+    const args = params.path
+      ? ["sources", "read", params.sourceId, params.path]
+      : ["sources", "read", params.sourceId];
+    const output = await runNia(args);
+    return toToolResult(output);
   },
 };
