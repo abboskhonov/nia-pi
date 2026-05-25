@@ -1,6 +1,8 @@
 // NIA REST API client — aligned with https://docs.trynia.ai/api-guide
 // Kept minimal for pi: no proxy/CA-cert handling (pi controls HTTP runtime).
 
+import { readFileSync, existsSync } from "node:fs";
+import { join } from "node:path";
 import type {
   SourcesResponse,
   IndexSourceRequest,
@@ -15,8 +17,46 @@ import type {
 
 const BASE_URL = "https://apigcp.trynia.ai/v2";
 
+function resolveApiKey(): string | undefined {
+  // 1. Environment variable (highest priority)
+  if (process.env.NIA_API_KEY) {
+    return process.env.NIA_API_KEY;
+  }
+
+  // 2. NIA CLI config file: ~/.config/nia/config.json
+  try {
+    const home = process.env.HOME || process.env.USERPROFILE || "/";
+    const configPath = join(home, ".config", "nia", "config.json");
+    if (existsSync(configPath)) {
+      const raw = readFileSync(configPath, "utf-8");
+      const parsed = JSON.parse(raw) as { apiKey?: string };
+      if (parsed.apiKey) {
+        return parsed.apiKey;
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  // 3. NIA CLI raw key file: ~/.config/nia/api_key
+  try {
+    const home = process.env.HOME || process.env.USERPROFILE || "/";
+    const keyPath = join(home, ".config", "nia", "api_key");
+    if (existsSync(keyPath)) {
+      const raw = readFileSync(keyPath, "utf-8").trim();
+      if (raw) {
+        return raw;
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  return undefined;
+}
+
 function authHeaders(): Record<string, string> {
-  const apiKey = process.env.NIA_API_KEY;
+  const apiKey = resolveApiKey();
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
@@ -35,14 +75,14 @@ async function parseErrorResponse(response: Response): Promise<string> {
     // JSON parsing failed, fall through to status-based message
   }
 
-  const hasKey = Boolean(process.env.NIA_API_KEY);
+  const hasKey = Boolean(resolveApiKey());
   if (response.status === 429) {
     return hasKey
       ? "Rate limited or quota exceeded. Check your usage at https://app.trynia.ai or upgrade your plan."
       : "Rate limited or quota exceeded. Set a NIA_API_KEY for higher limits. Get one at https://app.trynia.ai";
   }
   if (response.status === 401) {
-    return "Invalid or missing API key. Set NIA_API_KEY environment variable. Get a key at https://app.trynia.ai";
+    return "Invalid or missing API key. Set NIA_API_KEY environment variable, run `nia auth login`, or place your key in ~/.config/nia/config.json. Get a key at https://app.trynia.ai";
   }
   if (response.status === 404) {
     return "Resource not found. Check the identifier and try again.";
