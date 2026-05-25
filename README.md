@@ -2,70 +2,69 @@
 
 [Nia](https://trynia.ai) / [AgentSearch](https://agentsearch.sh) extension for the [pi coding agent](https://pi.dev).
 
-Brings the full Nia MCP toolset to pi as native extension tools — no MCP required. Index and search code repositories, documentation, research papers, and packages with up-to-date, hallucination-free context.
+Wraps the official NIA CLI via `npx` — **zero install required**. Brings the full Nia toolset to pi: index and search code repos, docs, papers, packages, run Oracle research, search GitHub without indexing, and share context across agents.
 
 ## Install
 
 ```bash
-pi install npm:nia-pi
-# or from GitHub:
 pi install git:github.com/abboskhonov/nia-pi
 ```
 
+No other dependencies needed. `npx` auto-downloads and caches the NIA CLI on first use.
+
 ## Authenticate
 
-The extension auto-discovers your Nia API key from (in order):
+The NIA CLI handles auth automatically. Get a key at [app.trynia.ai](https://app.trynia.ai), then:
 
-1. `NIA_API_KEY` environment variable
-2. `~/.config/nia/config.json` (from `nia auth login`)
-3. `~/.config/nia/api_key` (raw key file)
+```bash
+npx -y @nozomioai/nia auth login --api-key nk_your_key
+```
 
-Get a key at [app.trynia.ai](https://app.trynia.ai) if you don't have one.
+Or set the env var: `export NIA_API_KEY=nk_your_key`
 
-## What it adds
+## How it works
 
-| Tool | Purpose | MCP equivalent |
-|------|---------|----------------|
-| `nia-manage-resource` | List, status, sync, delete indexed sources | `manage_resource` |
-| `nia-index-source` | Index a new repo, doc URL, paper, or dataset | `index` |
-| `nia-search` | Search indexed sources for a specific question | `search` |
-| `nia-web-search` | Search the web via Nia | `nia_research` (quick) |
-| `nia-package-search` | Search source code of public packages | `nia_package_search_hybrid` |
-| `nia-explore` | Browse file trees of indexed sources | `nia_explore` |
-| `nia-read` | Read specific files from indexed sources | `nia_read` |
-| `nia-grep` | Regex search across indexed sources | `nia_grep` |
-| `nia-oracle` | Run autonomous deep research jobs | `nia_research` (oracle) |
-| `nia-context` | Save/load research context cross-agent | `context` |
+Instead of a custom HTTP client, every tool spawns the official NIA CLI:
 
-**`nia-docs` skill** — teaches the agent the Nia-First workflow: check indexed sources before web search.
+```
+User asks → pi tool call → npx -y @nozomioai/nia <command> → result
+```
 
-**`/nia-search <question> [repos...]`** — slash command for quick lookups.
+This means:
+- **New CLI features work immediately** — no extension updates needed
+- **Auth, rate limits, retries handled by the CLI** — no maintenance
+- **Full feature parity with MCP** — same commands, same output
+
+## Tools (12)
+
+| Tool | CLI command | Purpose |
+|------|-------------|---------|
+| `nia-manage-resource` | `nia sources list/get/sync/delete` | List, status, sync, delete indexed sources |
+| `nia-index-source` | `nia repos/sources/papers/datasets index` | Index repos, docs, papers, datasets |
+| `nia-search` | `nia search query` | Semantic search across indexed sources |
+| `nia-web-search` | `nia search web` | Web search |
+| `nia-package-search` | `nia packages search/grep` | Search package source code |
+| `nia-explore` | `nia sources tree` | Browse file trees |
+| `nia-read` | `nia sources read` | Read specific files |
+| `nia-grep` | `nia sources grep` | Regex search with snippets |
+| `nia-oracle` | `nia oracle create` | Deep autonomous research |
+| `nia-context` | `nia contexts save/list` | Cross-agent context sharing |
+| `nia-usage` | `nia usage` | Check API quota |
+| `nia-tracer` | `nia tracer run/status` | Search GitHub without indexing |
+
+**`nia-docs` skill** — teaches the Nia-First workflow: check indexed sources before web search.
+
+**`/nia-search <question>`** — slash command for quick lookups.
 
 ## Usage
 
-Once installed, just ask the agent a docs question and the tools are invoked automatically:
+Once installed, just ask:
 
 ```
 How do I configure caching in Next.js 16?
 ```
 
-For a manual lookup:
-
-```
-/nia-search "How does streamText work?" vercel/ai
-```
-
-## Nia-First Workflow
-
-The built-in skill teaches the agent to:
-
-1. **Check indexed sources first** (`nia-manage-resource`)
-2. **Index if missing** (`nia-index-source`)
-3. **Explore structure** (`nia-explore`)
-4. **Search / read / grep** (`nia-search`, `nia-read`, `nia-grep`)
-5. **Save findings** (`nia-context`)
-
-This eliminates hallucinations by using full source code and documentation instead of truncated web summaries.
+Pi auto-triggers the `nia-docs` skill → `nia-manage-resource` → `nia-search` → answer.
 
 ## License
 

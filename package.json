@@ -1,7 +1,7 @@
 {
   "name": "nia-pi",
-  "version": "0.2.0",
-  "description": "Nia / AgentSearch extension for pi.dev — index and search code repos, docs, papers, and packages. Full MCP-equivalent toolset for pi.",
+  "version": "0.3.0",
+  "description": "Nia / AgentSearch extension for pi.dev — wraps the NIA CLI via npx. Zero install, full feature parity with MCP.",
   "type": "module",
   "pi": {
     "extensions": [
