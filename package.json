@@ -1,0 +1,52 @@
+{
+  "name": "nia-pi",
+  "version": "0.1.0",
+  "description": "Official Nia extension for pi.dev — index and search code repositories, documentation, research papers, and packages via Nia AI",
+  "type": "module",
+  "pi": {
+    "extensions": [
+      "./extensions"
+    ],
+    "skills": [
+      "./skills"
+    ],
+    "prompts": [
+      "./prompts"
+    ],
+    "image": "https://raw.githubusercontent.com/nozomio-labs/nia-cli/main/assets/nia-logo.png"
+  },
+  "files": [
+    "extensions",
+    "lib",
+    "skills",
+    "prompts",
+    "LICENSE",
+    "README.md"
+  ],
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "typebox": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nozomio-labs/nia-pi.git"
+  },
+  "keywords": [
+    "pi-package",
+    "nia",
+    "search",
+    "documentation",
+    "ai",
+    "coding-agent",
+    "context"
+  ],
+  "author": "Nozomio Labs",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nozomio-labs/nia-pi/issues"
+  },
+  "homepage": "https://github.com/nozomio-labs/nia-pi#readme",
+  "publishConfig": {
+    "access": "public"
+  }
+}
