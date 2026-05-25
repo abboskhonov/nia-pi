@@ -1,4 +1,4 @@
-import type { Source, PackageSearchResponse } from "./types";
+import type { Source, PackageSearchResponse, SourceTreeItem } from "./types";
 
 export function formatSources(sources: Source[]): string {
   if (sources.length === 0) {
@@ -22,13 +22,15 @@ export function formatSources(sources: Source[]): string {
 
 export function formatSource(source: Source): string {
   const parts = [
-    `Indexed: **${source.display_name}**`,
+    `**${source.display_name}**`,
     `- ID: \`${source.id}\``,
     `- Type: ${source.type}`,
     `- Identifier: ${source.identifier}`,
     `- Status: ${source.status}`,
   ];
   if (source.url) parts.push(`- URL: ${source.url}`);
+  if (source.created_at) parts.push(`- Created: ${source.created_at}`);
+  if (source.updated_at) parts.push(`- Updated: ${source.updated_at}`);
   return parts.join("\n");
 }
 
@@ -44,4 +46,17 @@ export function formatPackageResults(response: PackageSearchResponse): string {
   });
 
   return `Package Search Results (${response.results.length}):\n\n${lines.join("\n\n---\n\n")}`;
+}
+
+export function formatTree(items: SourceTreeItem[], indent = 0): string {
+  const lines: string[] = [];
+  for (const item of items) {
+    const prefix = "  ".repeat(indent);
+    const icon = item.type === "directory" ? "📁" : "📄";
+    lines.push(`${prefix}${icon} ${item.name}`);
+    if (item.children && item.children.length > 0) {
+      lines.push(formatTree(item.children, indent + 1));
+    }
+  }
+  return lines.join("\n");
 }

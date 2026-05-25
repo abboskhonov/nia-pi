@@ -1,7 +1,7 @@
 {
   "name": "nia-pi",
-  "version": "0.1.0",
-  "description": "Official Nia extension for pi.dev — index and search code repositories, documentation, research papers, and packages via Nia AI",
+  "version": "0.2.0",
+  "description": "Nia / AgentSearch extension for pi.dev — index and search code repos, docs, papers, and packages. Full MCP-equivalent toolset for pi.",
   "type": "module",
   "pi": {
     "extensions": [
@@ -12,8 +12,7 @@
     ],
     "prompts": [
       "./prompts"
-    ],
-    "image": "https://raw.githubusercontent.com/nozomio-labs/nia-cli/main/assets/nia-logo.png"
+    ]
   },
   "files": [
     "extensions",
@@ -29,11 +28,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nozomio-labs/nia-pi.git"
+    "url": "git+https://github.com/abboskhonov/nia-pi.git"
   },
   "keywords": [
     "pi-package",
     "nia",
+    "agentsearch",
     "search",
     "documentation",
     "ai",
@@ -43,9 +43,9 @@
   "author": "Nozomio Labs",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/nozomio-labs/nia-pi/issues"
+    "url": "https://github.com/abboskhonov/nia-pi/issues"
   },
-  "homepage": "https://github.com/nozomio-labs/nia-pi#readme",
+  "homepage": "https://github.com/abboskhonov/nia-pi#readme",
   "publishConfig": {
     "access": "public"
   }

@@ -1,8 +1,8 @@
-// NIA API response types — aligned with https://docs.trynia.ai/api-guide
+// NIA / AgentSearch API response types — aligned with https://docs.trynia.ai/api-guide
 
 export interface Source {
   id: string;
-  type: "repository" | "documentation" | "research_paper" | "huggingface_dataset" | "local_folder";
+  type: "repository" | "documentation" | "research_paper" | "huggingface_dataset" | "local_folder" | "filesystem";
   display_name: string;
   identifier: string;
   status: "indexing" | "ready" | "error" | "pending";
@@ -13,6 +13,11 @@ export interface Source {
 
 export interface SourcesResponse {
   sources?: Source[];
+  error?: string;
+}
+
+export interface SourceResponse {
+  source?: Source;
   error?: string;
 }
 
@@ -79,5 +84,65 @@ export interface OracleJobResponse {
   job_id?: string;
   status?: "queued" | "running" | "completed" | "failed";
   result?: string;
+  error?: string;
+}
+
+// Source exploration
+export interface SourceContentResponse {
+  content?: string;
+  error?: string;
+}
+
+export interface SourceGrepRequest {
+  pattern: string;
+}
+
+export interface SourceGrepResponse {
+  results?: Array<{
+    path: string;
+    line_number: number;
+    snippet: string;
+  }>;
+  error?: string;
+}
+
+export interface SourceTreeItem {
+  name: string;
+  path: string;
+  type: "file" | "directory";
+  children?: SourceTreeItem[];
+}
+
+export interface SourceTreeResponse {
+  tree?: SourceTreeItem[];
+  error?: string;
+}
+
+// Context sharing
+export interface SaveContextRequest {
+  title: string;
+  summary: string;
+  content: string;
+  agent_source?: string;
+  tags?: string[];
+}
+
+export interface SaveContextResponse {
+  context?: {
+    id: string;
+    title: string;
+  };
+  error?: string;
+}
+
+export interface ListContextsResponse {
+  contexts?: Array<{
+    id: string;
+    title: string;
+    summary: string;
+    agent_source?: string;
+    tags?: string[];
+    created_at: string;
+  }>;
   error?: string;
 }
